@@ -3,11 +3,11 @@ import cors from "cors"; // cors
 import { MongoClient, ServerApiVersion } from "mongodb"; // clinet mongodb
 import authRouter from "./routes/auth.js"; // our auth router
 import dns from "node:dns/promises";
+import { configDotenv } from "dotenv";
 
 const app = express(); // express app
 const port = 3000; // local host port
-const MONGODB_CONNECTION_URL =
-  "mongodb+srv://anshvishesh03_db_user:aUmYMY4JJvfVm1Sm@cluster0.uupfiwj.mongodb.net/?appName=Cluster0";
+configDotenv();
 
 app.use(express.json()); // parse json
 app.use(cors()); // cors
@@ -17,7 +17,7 @@ dns.setServers(["1.1.1.1"]);
 console.log(await dns.getServers()); // 127.0.0.1
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
-const client = new MongoClient(MONGODB_CONNECTION_URL, {
+const client = new MongoClient(process.env.MONGODB_CONNECTION_URL, {
   serverApi: {
     version: ServerApiVersion.v1,
     strict: true,
