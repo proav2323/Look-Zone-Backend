@@ -2,9 +2,11 @@ import express from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { ObjectId } from "mongodb";
+import generateId from "../generateId.js";
 
-const authRouter = express.Router();
+const authRouter = express.Router(); // auth router
 
+// auth user with token
 authRouter.get("/", async function (req, res, next) {
   await req.db.createCollection("users");
   let token = req.body.token;
@@ -27,6 +29,7 @@ authRouter.get("/", async function (req, res, next) {
   }
 });
 
+// login user
 authRouter.post("/login", async function (req, res, next) {
   await req.db.createCollection("users");
   let password = req.body.password;
@@ -64,6 +67,7 @@ authRouter.post("/login", async function (req, res, next) {
   }
 });
 
+// sign up user
 authRouter.post("/signup", async function (req, res, next) {
   await req.db.createCollection("users");
   let password = req.body.password;
@@ -98,8 +102,15 @@ authRouter.post("/signup", async function (req, res, next) {
         name: name,
         email: email,
         password: hashedPassword,
-        address: {},
-        cart: {},
+        address: {
+          street: "",
+          city: "",
+          state: "",
+          country: "",
+          zip: "",
+          addressMade: false,
+        },
+        cart: { products: [], totalPrice: 0, id: generateId(8) },
         orders: [],
       });
 
@@ -111,6 +122,7 @@ authRouter.post("/signup", async function (req, res, next) {
   }
 });
 
+// get user by id
 authRouter.get("/user/:id", async (req, res, next) => {
   const userId = req.params.id;
   await req.db.createCollection("users");
@@ -125,6 +137,53 @@ authRouter.get("/user/:id", async (req, res, next) => {
 
   if (user) {
     res.status(200).send(user);
+  } else {
+    res.status(404).send("user not found");
+  }
+});
+
+authRouter.put("/update/:id", async (req, res, next) => {
+  const userId = req.params.id;
+  await req.db.createCollection("users");
+
+  if (userId === "" || userId == null || userId == undefined) {
+    res.status(500).send("bad request");
+    return;
+  }
+
+  let userCollection = req.db.collection("users");
+  let user = await userCollection.findOne({ _id: new ObjectId(userId) });
+
+  if (user) {
+    let street = req.body.street;
+    let city = req.body.city;
+    let state = req.body.state;
+    let zip = req.body.zip;
+    let country = req.body.country;
+
+    if (street && city && zip && state && country) {
+      let newAddress = {
+        state: state,
+        city: city,
+        street: street,
+        zip: zip,
+        country: country,
+        addressMade: true,
+      };
+
+      try {
+        await userCollection.updateOne(
+          { _id: new ObjectId(userId) },
+          { $set: { address: newAddress } },
+        );
+        res.status(200).send("address updated successfully");
+      } catch (err) {
+        res.status(500).send(err.message);
+      }
+    } else {
+      res.status(401).send("please fill the fields");
+      return;
+    }
   } else {
     res.status(404).send("user not found");
   }
