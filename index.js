@@ -46,16 +46,6 @@ try {
 // routes
 app.use("/auth", authRouter);
 
-app.get("/", async (req, res, next) => {
-  try {
-    res.send("success").status(200);
-  } catch (err) {
-    res.send(err.message).status(500);
-  } finally {
-    next();
-  }
-});
-
 app.listen(port, () => {
   console.log(`app is running on ${port}`);
 }); // listening on the port
