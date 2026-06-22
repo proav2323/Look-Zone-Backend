@@ -11,6 +11,7 @@ import dns from "node:dns/promises";
 import authRouter from "./routes/auth.js"; // our auth router
 import productRouter from "./routes/product.js"; // our product router
 import cartRouter from "./routes/cart.js";
+import categoryRouter from "./routes/category.js";
 
 const app = express(); // express app
 const port = 3000; // local host port
@@ -50,6 +51,7 @@ try {
 app.use("/auth", authRouter); // auth router
 app.use("/products", productRouter); // product router
 app.use("/cart", cartRouter); // cart router
+app.use("/categories", categoryRouter); // categories router
 
 app.listen(port, () => {
   console.log(`app is running on ${port}`);
