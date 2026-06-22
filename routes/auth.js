@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { ObjectId } from "mongodb";
 import generateId from "../generateId.js";
+import auth from "../middlewares/auth.js";
 
 const authRouter = express.Router(); // auth router
 
@@ -110,11 +111,14 @@ authRouter.post("/signup", async function (req, res, next) {
           zip: "",
           addressMade: false,
         },
+        admin: email === "anshvishesh03@gmail.com" ? true : false,
+        canEdit: email === "anshvishesh03@gmail.com" ? true : false,
+        canView: email === "anshvishesh03@gmail.com" ? true : false,
         cart: { products: [], totalPrice: 0, id: generateId(8) },
         orders: [],
       });
 
-      let token = jwt.sign({ email: newUser.email }, process.env.JWT_SECRET);
+      let token = jwt.sign({ email: email }, process.env.JWT_SECRET);
       res.status(200).send(token);
     } catch (err) {
       res.status(500).send(err.message);
@@ -186,6 +190,62 @@ authRouter.put("/update/:id", async (req, res, next) => {
     }
   } else {
     res.status(404).send("user not found");
+  }
+});
+
+authRouter.put("/dashboard/:id", auth, async (req, res, next) => {
+  await req.db.createCollection("users");
+  let usersCollection = req.db.collection("users");
+  let id = req.params.id;
+  let mode = req.body.mode;
+  if (mode && id) {
+    let user = await usersCollection.findOne({ _id: new ObjectId(id) });
+    if (!user) {
+      res.status(404).send("user not found");
+      return;
+    }
+
+    if (mode === "edit-to-view") {
+      await usersCollection.updateOne(
+        { _id: new ObjectId(id) },
+        {
+          $set: {
+            canEdit: false,
+            canView: true,
+          },
+        },
+      );
+
+      res.status(200).send("permission updated");
+    } else if (mode === "view-to-edit") {
+      await usersCollection.updateOne(
+        { _id: new ObjectId(id) },
+        {
+          $set: {
+            canEdit: true,
+            canView: true,
+          },
+        },
+      );
+
+      res.status(200).send("permission updated");
+    } else if (mode === "edit-to-none" || mode === "view-to-none") {
+      await usersCollection.updateOne(
+        { _id: new ObjectId(id) },
+        {
+          $set: {
+            canEdit: false,
+            canView: false,
+          },
+        },
+      );
+
+      res.status(200).send("permission updated");
+    } else {
+      res.status(401).send("user send different mode");
+    }
+  } else {
+    res.status(404).send("user didn't send the mode or didn't send the id");
   }
 });
 

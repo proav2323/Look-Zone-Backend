@@ -1,7 +1,8 @@
 import express from "express";
 import { ObjectId } from "mongodb";
 import cloudinary from "../cloudinary.js";
-import upload from "../multer.js";
+import upload from "../middlewares/multer.js";
+import auth from "../middlewares/auth.js";
 
 const productRouter = express.Router();
 
@@ -67,7 +68,7 @@ productRouter.get("/product/:id", async (req, res, next) => {
   }
 });
 
-productRouter.post("/add", async (req, res, next) => {
+productRouter.post("/add", auth, async (req, res, next) => {
   await req.db.createCollection("products");
   let productsCollection = req.db.collection("products");
 
@@ -99,7 +100,7 @@ productRouter.post("/add", async (req, res, next) => {
   }
 });
 
-productRouter.put("/update/:id", async (req, res, next) => {
+productRouter.put("/update/:id", auth, async (req, res, next) => {
   await req.db.createCollection("products");
   let productsCollection = req.db.collection("products");
 
@@ -144,7 +145,7 @@ productRouter.put("/update/:id", async (req, res, next) => {
   }
 });
 
-productRouter.delete("/delete/:id", async (req, res, next) => {
+productRouter.delete("/delete/:id", auth, async (req, res, next) => {
   await req.db.createCollection("products");
   let productsCollection = req.db.collection("products");
 
@@ -164,6 +165,7 @@ productRouter.delete("/delete/:id", async (req, res, next) => {
 
 productRouter.post(
   "/upload",
+  auth,
   upload.single("image"),
   async (req, res, next) => {
     let file = req.file;
@@ -197,7 +199,7 @@ productRouter.post(
   },
 );
 
-productRouter.delete("/destroy/:id", async (req, res, next) => {
+productRouter.delete("/destroy/:id", auth, async (req, res, next) => {
   let id = req.params.id;
   if (id) {
     try {

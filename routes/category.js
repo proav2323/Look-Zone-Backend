@@ -1,5 +1,6 @@
 import express from "express";
 import { ObjectId } from "mongodb";
+import auth from "../middlewares/auth.js";
 
 const categoryRouter = express.Router();
 
@@ -40,7 +41,7 @@ categoryRouter.get("/category/:id", async (req, res, next) => {
   }
 });
 
-categoryRouter.post("/add", async (req, res, next) => {
+categoryRouter.post("/add", auth, async (req, res, next) => {
   await req.db.createCollection("categories");
   let categoryCollection = req.db.collection("categories");
 
@@ -68,7 +69,7 @@ categoryRouter.post("/add", async (req, res, next) => {
   }
 });
 
-categoryRouter.put("/update/:id", async (req, res, next) => {
+categoryRouter.put("/update/:id", auth, async (req, res, next) => {
   await req.db.createCollection("categories");
   let categoryCollection = req.db.collection("categories");
 
@@ -104,7 +105,7 @@ categoryRouter.put("/update/:id", async (req, res, next) => {
   }
 });
 
-categoryRouter.delete("/delete/:id", async (req, res, next) => {
+categoryRouter.delete("/delete/:id", auth, async (req, res, next) => {
   await req.db.createCollection("categories");
   let categoryCollection = req.db.collection("categories");
 
