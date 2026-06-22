@@ -12,6 +12,7 @@ import authRouter from "./routes/auth.js"; // our auth router
 import productRouter from "./routes/product.js"; // our product router
 import cartRouter from "./routes/cart.js";
 import categoryRouter from "./routes/category.js";
+import multer from "multer";
 
 const app = express(); // express app
 const port = 3000; // local host port

@@ -1,5 +1,7 @@
 import express from "express";
 import { ObjectId } from "mongodb";
+import cloudinary from "../cloudinary.js";
+import upload from "../multer.js";
 
 const productRouter = express.Router();
 
@@ -16,6 +18,32 @@ productRouter.get("/", async (req, res, next) => {
 
   res.status(200).send(products);
 });
+
+productRouter.get("/category/:id", async (req, res, next) => {
+  await req.db.createCollection("products");
+  let productsCollection = req.db.collection("products");
+  let id = req.params.id;
+
+  if (id) {
+    let productsCursor = productsCollection.find({
+      categoryId: new ObjectId(id),
+    });
+    let products = [];
+
+    for await (let newProduct of productsCursor) {
+      products.push(newProduct);
+    }
+
+    res.status(200).send(products);
+  } else {
+    res.status(404).send("send right url");
+  }
+});
+
+productRouter.get("/search", async (req, res, next) => {
+  await req.db.createCollection("products");
+  let productsCollection = req.db.collection("products");
+}); // after conecting backend to frontend
 
 productRouter.get("/product/:id", async (req, res, next) => {
   await req.db.createCollection("products");
@@ -131,6 +159,56 @@ productRouter.delete("/delete/:id", async (req, res, next) => {
     }
   } else {
     res.status(404).send("bad url");
+  }
+});
+
+productRouter.post(
+  "/upload",
+  upload.single("image"),
+  async (req, res, next) => {
+    let file = req.file;
+    if (file) {
+      // try {
+      //   let url = await cloudinary.uploader.upload(file.path);
+
+      //   res.status(200).send({ url: url.secure_url, id: url.public_id });
+      // } catch (err) {
+      //   res.status(500).send(err.message);
+      // }
+
+      let stream = cloudinary.uploader.upload_stream(
+        { resource_type: "auto" },
+        (err, result) => {
+          if (err) {
+            res.status(500).send(err.message);
+            return;
+          }
+
+          res
+            .status(200)
+            .send({ url: result.secure_url, id: result.public_id });
+        },
+      );
+
+      stream.end(file.buffer);
+    } else {
+      res.status(404).send("no file sended");
+    }
+  },
+);
+
+productRouter.delete("/destroy/:id", async (req, res, next) => {
+  let id = req.params.id;
+  if (id) {
+    try {
+      let url = await cloudinary.uploader.destroy(id);
+
+      res.status(200).send("image delected succesfully");
+    } catch (err) {
+      res.status(500).send(err.message);
+    }
+  } else {
+    res.status(404).send("wrong url");
   }
 });
 
