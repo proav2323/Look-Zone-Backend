@@ -1,6 +1,6 @@
 import express from "express";
 import { ObjectId } from "mongodb";
 
-const courselRouter = express.Router();
+const reviewRouter = express.Router();
 
-export default courselRouter;
+export default reviewRouter;

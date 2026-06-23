@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import { ObjectId } from "mongodb";
 import generateId from "../generateId.js";
 import auth from "../middlewares/auth.js";
+import login from "../middlewares/login.js";
 
 const authRouter = express.Router(); // auth router
 
@@ -146,7 +147,7 @@ authRouter.get("/user/:id", async (req, res, next) => {
   }
 });
 
-authRouter.put("/update/:id", async (req, res, next) => {
+authRouter.put("/update/:id", login, async (req, res, next) => {
   const userId = req.params.id;
   await req.db.createCollection("users");
 
