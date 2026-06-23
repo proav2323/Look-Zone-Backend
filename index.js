@@ -56,7 +56,7 @@ app.use("/products", productRouter); // product router
 app.use("/cart", cartRouter); // cart router
 app.use("/categories", categoryRouter); // categories router
 app.use("/reviews", reviewRouter); // rebiew router
-app.use("/courselproducts", courselRouter); // caoursel products router
+app.use("/coursels", courselRouter); // caoursel products router
 app.use("/orders", ordersRouter); // orders router
 
 app.listen(port, () => {
