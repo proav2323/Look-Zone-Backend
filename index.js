@@ -14,6 +14,7 @@ import cartRouter from "./routes/cart.js";
 import categoryRouter from "./routes/category.js";
 import reviewRouter from "./routes/review.js";
 import courselRouter from "./routes/courselsProducts.js";
+import ordersRouter from "./routes/orders.js";
 
 const app = express(); // express app
 const port = 3000; // local host port
@@ -56,6 +57,7 @@ app.use("/cart", cartRouter); // cart router
 app.use("/categories", categoryRouter); // categories router
 app.use("/reviews", reviewRouter); // rebiew router
 app.use("/courselproducts", courselRouter); // caoursel products router
+app.use("/orders", ordersRouter); // orders router
 
 app.listen(port, () => {
   console.log(`app is running on ${port}`);
