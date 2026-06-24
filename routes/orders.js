@@ -3,8 +3,45 @@ import { ObjectId } from "mongodb";
 import jwt from "jsonwebtoken";
 import login from "../middlewares/login.js";
 import auth from "../middlewares/auth.js";
+import adminView from "../middlewares/adminView.js";
 
 const ordersRouter = express.Router();
+
+ordersRouter.get("/", adminView, async (req, res, next) => {
+  await req.db.createCollection("orders");
+  let ordersCollection = req.db.collection("orders");
+
+  let ordersCursor = await ordersCollection.find({});
+  let orders = [];
+
+  for await (let newOrder of ordersCursor) {
+    orders.push(newOrder);
+  }
+
+  res.status(200).send(orders);
+});
+
+ordersRouter.get("/status", adminView, async (req, res, next) => {
+  await req.db.createCollection("orders");
+  let ordersCollection = req.db.collection("orders");
+  let status = req.query.search;
+
+  if (!status) {
+    res.status(404).send("worng url");
+    return;
+  }
+
+  let ordersCursor = ordersCollection.find({
+    status: status,
+  });
+  let orders = [];
+
+  for await (let newOrder of ordersCursor) {
+    orders.push(newOrder);
+  }
+
+  res.status(200).send(orders);
+});
 
 ordersRouter.get("/order/:id", login, async (req, res, next) => {
   const orderId = req.params.id;
@@ -43,6 +80,7 @@ ordersRouter.post("/place", login, async (req, res, next) => {
     payment: user.cart.totalPrice,
     date: Date.now(),
     status: "ordered",
+    userId: user._id,
   };
 
   let order = await ordersCollection.insertOne(newOrder);

@@ -29,7 +29,6 @@ dns.setServers(["1.1.1.1"]);
 const client = new MongoClient(process.env.MONGODB_CONNECTION_URL.toString(), {
   serverApi: {
     version: ServerApiVersion.v1,
-    strict: true,
     deprecationErrors: true,
   },
 });

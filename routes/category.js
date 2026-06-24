@@ -1,6 +1,7 @@
 import express from "express";
 import { ObjectId } from "mongodb";
 import auth from "../middlewares/auth.js";
+import adminView from "../middlewares/adminView.js";
 
 const categoryRouter = express.Router();
 
@@ -9,6 +10,28 @@ categoryRouter.get("/", async (req, res, next) => {
   let categoryCollection = req.db.collection("categories");
 
   let categoryCursor = categoryCollection.find({});
+  let category = [];
+
+  for await (let newCategory of categoryCursor) {
+    category.push(newCategory);
+  }
+
+  res.status(200).send(category);
+});
+
+categoryRouter.get("/search", adminView, async (req, res, next) => {
+  await req.db.createCollection("categories");
+  let categoryCollection = req.db.collection("categories");
+
+  await categoryCollection.createIndex({ name: "text" });
+  let search = req.query.search;
+
+  if (!search) {
+    res.status(404).send("wrong url");
+    return;
+  }
+
+  let categoryCursor = categoryCollection.find({ $text: { $search: search } });
   let category = [];
 
   for await (let newCategory of categoryCursor) {

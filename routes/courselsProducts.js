@@ -3,6 +3,7 @@ import { ObjectId } from "mongodb";
 import jwt from "jsonwebtoken";
 import auth from "../middlewares/auth.js";
 import generateId from "../generateId.js";
+import adminView from "../middlewares/adminView.js";
 
 const courselRouter = express.Router();
 
@@ -11,6 +12,28 @@ courselRouter.get("/", async (req, res, next) => {
   let courselCollection = req.db.collection("courselproducts");
 
   let courselCursor = courselCollection.find({});
+  let coursels = [];
+
+  for await (let coursel of courselCursor) {
+    coursels.push(coursel);
+  }
+
+  res.status(200).send(coursels);
+});
+
+courselRouter.get("/search", adminView, async (req, res, next) => {
+  await req.db.createCollection("courselproducts");
+  let courselCollection = req.db.collection("courselproducts");
+
+  await courselCollection.createIndex({ heading: "text", subText: "text" });
+  let search = req.query.search;
+
+  if (!search) {
+    res.status(404).send("wrong url");
+    return;
+  }
+
+  let courselCursor = courselCollection.find({ $text: { $search: search } });
   let coursels = [];
 
   for await (let coursel of courselCursor) {

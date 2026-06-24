@@ -44,6 +44,26 @@ productRouter.get("/category/:id", async (req, res, next) => {
 productRouter.get("/search", async (req, res, next) => {
   await req.db.createCollection("products");
   let productsCollection = req.db.collection("products");
+  await productsCollection.createIndex({ name: "text", description: "text" });
+
+  let search = req.query.search;
+
+  if (!search) {
+    res.status(404).send("wrong url");
+    return;
+  }
+
+  let productsCursor = productsCollection.find({
+    $text: { $search: search },
+  });
+
+  let products = [];
+
+  for await (let product of productsCursor) {
+    products.push(product);
+  }
+
+  res.status(200).send(products);
 }); // after conecting backend to frontend
 
 productRouter.get("/product/:id", async (req, res, next) => {

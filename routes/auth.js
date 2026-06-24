@@ -5,6 +5,7 @@ import { ObjectId } from "mongodb";
 import generateId from "../generateId.js";
 import auth from "../middlewares/auth.js";
 import login from "../middlewares/login.js";
+import adminView from "../middlewares/adminView.js";
 
 const authRouter = express.Router(); // auth router
 
@@ -60,7 +61,9 @@ authRouter.post("/login", async function (req, res, next) {
       return;
     }
 
-    let token = jwt.sign({ email: email }, process.env.JWT_SECRET);
+    let token = jwt.sign({ email: email }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    });
 
     res.status(200).send(token);
   } else {
@@ -119,7 +122,9 @@ authRouter.post("/signup", async function (req, res, next) {
         orders: [],
       });
 
-      let token = jwt.sign({ email: email }, process.env.JWT_SECRET);
+      let token = jwt.sign({ email: email }, process.env.JWT_SECRET, {
+        expiresIn: "1d",
+      });
       res.status(200).send(token);
     } catch (err) {
       res.status(500).send(err.message);
@@ -248,6 +253,40 @@ authRouter.put("/dashboard/:id", auth, async (req, res, next) => {
   } else {
     res.status(404).send("user didn't send the mode or didn't send the id");
   }
+});
+
+authRouter.get("/search", adminView, async (req, res, next) => {
+  await req.db.createCollection("users");
+  let usersCollection = req.db.collection("users");
+  let search = req.query.search;
+
+  usersCollection.createIndex({ name: "text" });
+
+  if (!search) {
+    res.status(404).send("wrong url");
+    return;
+  }
+
+  let usersCursor = usersCollection.find({ $text: { $search: search } });
+  let users = [];
+  for await (let newUser of usersCursor) {
+    users.push(newUser);
+  }
+
+  res.status(200).send(users);
+});
+
+authRouter.get("/users", adminView, async (req, res, next) => {
+  await req.db.createCollection("users");
+  let usersCollection = req.db.collection("users");
+
+  let usersCursor = usersCollection.find({});
+  let users = [];
+  for await (let newUser of usersCursor) {
+    users.push(newUser);
+  }
+
+  res.status(200).send(users);
 });
 
 export default authRouter;
