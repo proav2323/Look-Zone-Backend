@@ -35,7 +35,6 @@ authRouter.get("/", async function (req, res, next) {
 // login user
 authRouter.post("/login", async function (req, res, next) {
   await req.db.createCollection("users");
-  console.log(typeof req.body);
   let password = req.body.password;
   let email = req.body.email;
 
