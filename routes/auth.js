@@ -12,9 +12,11 @@ const authRouter = express.Router(); // auth router
 // auth user with token
 authRouter.get("/", async function (req, res, next) {
   await req.db.createCollection("users");
-  let token = req.body.token;
-  if (token === "" || token == undefined || token == null) {
-    res.status(404).send("token missing");
+  const authHeader = req.headers.authorization;
+  const token = authHeader && authHeader.split(" ")[1];
+
+  if (!token) {
+    res.status(401).send("unauthorized to this action");
     return;
   }
 
@@ -25,10 +27,8 @@ authRouter.get("/", async function (req, res, next) {
 
   if (user) {
     res.status(200).send(user);
-    next();
   } else {
     res.status(404).send("user not found");
-    next();
   }
 });
 
