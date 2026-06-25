@@ -20,6 +20,7 @@ const app = express(); // express app
 const port = 3000; // local host port
 
 app.use(express.json()); // parse json
+app.use(express.urlencoded({ extended: true }));
 app.use(cors()); // cors
 
 // setting dns
