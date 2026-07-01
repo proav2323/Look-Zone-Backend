@@ -126,7 +126,7 @@ ordersRouter.post("/place", login, async (req, res, next) => {
     cart: user.cart,
     address: user.address,
     payment: user.cart.totalPrice,
-    date: Date.now(),
+    date: new Date(Date.now()),
     status: "ordered",
     userId: user._id,
   };
