@@ -43,6 +43,54 @@ ordersRouter.get("/status", adminView, async (req, res, next) => {
   res.status(200).send(orders);
 });
 
+ordersRouter.get("/date", adminView, async (req, res, next) => {
+  await req.db.createCollection("orders");
+  let ordersCollection = req.db.collection("orders");
+  let dateStart = req.query.dateStart;
+  let dateEnd = req.query.dateEnd;
+
+  if (!dateEnd || !dateStart) {
+    res.status(404).send("wrong url");
+    return;
+  }
+
+  let ordersCursor = ordersCollection.find({
+    date: { $gte: new Date(dateStart), $lte: new Date(dateEnd) },
+  });
+  let orders = [];
+
+  for await (let newOrder of ordersCursor) {
+    orders.push(newOrder);
+  }
+
+  res.status(200).send(orders);
+});
+
+ordersRouter.get("/filter", adminView, async (req, res, next) => {
+  await req.db.createCollection("orders");
+  let ordersCollection = req.db.collection("orders");
+  let dateStart = req.query.dateStart;
+  let dateEnd = req.query.dateEnd;
+  let status = req.query.status;
+
+  if (!dateEnd || !dateStart || !status) {
+    res.status(404).send("wrong url");
+    return;
+  }
+
+  let ordersCursor = ordersCollection.find({
+    date: { $gte: new Date(dateStart), $lte: new Date(dateEnd) },
+    status: status,
+  });
+  let orders = [];
+
+  for await (let newOrder of ordersCursor) {
+    orders.push(newOrder);
+  }
+
+  res.status(200).send(orders);
+});
+
 ordersRouter.get("/order/:id", login, async (req, res, next) => {
   const orderId = req.params.id;
   await req.db.createCollection("orders");
